@@ -28,5 +28,5 @@ void main() {
     0.0, 0.0, 1.0, 0.0,
     0.0, 0.0, 0.0, 1.0
   );
-  gl_Position = rotationMatrix * vec4(vPosition, 0.0, 1.0);
+  gl_Position = scalationMatrix * vec4(vPosition, 0.0, 1.0);
 }

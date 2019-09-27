@@ -41,6 +41,7 @@
     // Membuat sambungan untuk uniform
     var thetaUniformLocation = gl.getUniformLocation(program, 'theta');
     var theta = 0;
+    gl.uniform1f(thetaUniformLocation, theta);
     var scaleXUniformLocation = gl.getUniformLocation(program, 'scaleX');
     var scaleX = 1.0;
     gl.uniform1f(scaleXUniformLocation, scaleX);
@@ -48,9 +49,13 @@
     var scaleY = 1.0;
     gl.uniform1f(scaleYUniformLocation, scaleY);
 
+    var melebar = 1.0;
+
     function render() {
-      theta += 0.01;
-      gl.uniform1f(thetaUniformLocation, theta);
+      if (scaleX >= 1.0) melebar = -1.0;
+      else if (scaleX <= -1.0) melebar = 1.0;
+      scaleX += 0.01 * melebar;
+      gl.uniform1f(scaleXUniformLocation, scaleX);
 
       gl.clearColor(0.0, 0.0, 0.0, 1.0);
       gl.clear(gl.COLOR_BUFFER_BIT);
