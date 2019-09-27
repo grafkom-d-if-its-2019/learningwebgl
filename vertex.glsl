@@ -6,6 +6,11 @@ varying vec3 fColor;
 
 void main() {
   fColor = vColor;
-
-  gl_Position = vec4(vPosition, 0.0, 1.0);
+  mat4 translate = mat4(
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    -0.5, 0.5, 0.0, 1.0
+  );
+  gl_Position = translate * vec4(vPosition, 0.0, 1.0);
 }
