@@ -40,11 +40,24 @@
 
     // Membuat sambungan untuk uniform
     var thetaUniformLocation = gl.getUniformLocation(program, 'theta');
-    var theta = Math.PI;  // 180º dalam radian
-    gl.uniform1f(thetaUniformLocation, theta);
+    var theta = 0;
+    var scaleXUniformLocation = gl.getUniformLocation(program, 'scaleX');
+    var scaleX = 1.0;
+    gl.uniform1f(scaleXUniformLocation, scaleX);
+    var scaleYUniformLocation = gl.getUniformLocation(program, 'scaleY');
+    var scaleY = 1.0;
+    gl.uniform1f(scaleYUniformLocation, scaleY);
 
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    function render() {
+      theta += 0.01;
+      gl.uniform1f(thetaUniformLocation, theta);
+
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+      requestAnimationFrame(render);
+    }
+    render();
   }
 })();
