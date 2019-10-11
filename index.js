@@ -85,6 +85,7 @@
     // Definisi untuk matriks model
     var mmLoc = gl.getUniformLocation(program, 'modelMatrix');
     var mm = glMatrix.mat4.create();
+    glMatrix.mat4.translate(mm, mm, [0.0, 0.0, -2.0]);
 
     // Kontrol menggunakan keyboard
     function onKeyDown(event) {
@@ -96,6 +97,25 @@
       if (event.keyCode == 90) axis[z] = !axis[z];
     }
     document.addEventListener('keydown', onKeyDown);
+
+    // Definisi untuk matrix view dan projection
+    var vmLoc = gl.getUniformLocation(program, 'viewMatrix');
+    var vm = glMatrix.mat4.create();
+    var pmLoc = gl.getUniformLocation(program, 'projectionMatrix');
+    var pm = glMatrix.mat4.create();
+    glMatrix.mat4.lookAt(vm,
+      [0.0, 0.0, 0.0], // di mana posisi kamera (posisi)
+      [0.0, 0.0, -2.0], // ke mana kamera menghadap (vektor)
+      [0.0, 1.0, 0.0]  // ke mana arah atas kamera (vektor)
+    );
+    gl.uniformMatrix4fv(vmLoc, false, vm);
+    glMatrix.mat4.perspective(pm,
+      glMatrix.glMatrix.toRadian(90), // fovy dalam radian
+      canvas.width/canvas.height,     // aspect ratio
+      0.5,  // near
+      10.0, // far  
+    );
+    gl.uniformMatrix4fv(pmLoc, false, pm);
 
     function render() {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
