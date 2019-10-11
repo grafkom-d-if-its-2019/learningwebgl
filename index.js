@@ -76,18 +76,34 @@
     // Membuat sambungan untuk uniform
     var thetaUniformLocation = gl.getUniformLocation(program, 'theta');
     var theta = 0;
+    var thetaSpeed = 0.0;
+    var axis = [true, true, true];
+    var x = 0;
+    var y = 1;
+    var z = 2;
 
     // Definisi untuk matriks model
     var mmLoc = gl.getUniformLocation(program, 'modelMatrix');
+    var mm = glMatrix.mat4.create();
+
+    // Kontrol menggunakan keyboard
+    function onKeyDown(event) {
+      if (event.keyCode == 189) thetaSpeed -= 0.01;       // key '-'
+      else if (event.keyCode == 187) thetaSpeed += 0.01;  // key '='
+      else if (event.keyCode == 48) thetaSpeed = 0;       // key '0'
+      if (event.keyCode == 88) axis[x] = !axis[x];
+      if (event.keyCode == 89) axis[y] = !axis[y];
+      if (event.keyCode == 90) axis[z] = !axis[z];
+    }
+    document.addEventListener('keydown', onKeyDown);
 
     function render() {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      var mm = glMatrix.mat4.create();
-      theta += 0.01;
-      glMatrix.mat4.rotateZ(mm, mm, theta);
-      glMatrix.mat4.rotateY(mm, mm, theta);
-      glMatrix.mat4.rotateX(mm, mm, theta);
+      theta += thetaSpeed;
+      if (axis[z]) glMatrix.mat4.rotateZ(mm, mm, thetaSpeed);
+      if (axis[y]) glMatrix.mat4.rotateY(mm, mm, thetaSpeed);
+      if (axis[x]) glMatrix.mat4.rotateX(mm, mm, thetaSpeed);
       gl.uniformMatrix4fv(mmLoc, false, mm);
 
       gl.drawArrays(gl.TRIANGLES, 0, 36);
