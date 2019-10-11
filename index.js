@@ -10,12 +10,47 @@
     gl.useProgram(program);
 
     // Mendefinisikan verteks-verteks
-    var vertices = [
-      // x, y       r, g, b
-      0.0, 0.5,     1.0, 1.0, 0.0,  // kuning
-      0.5, -0.5,    0.0, 1.0, 1.0,  // cyan
-      -0.5, -0.5,   1.0, 0.0, 1.0   // magenta
+    var vertices = [];
+    var cubePoints = [
+      [ -0.5, -0.5,  0.5 ],
+      [ -0.5,  0.5,  0.5 ],
+      [  0.5,  0.5,  0.5 ],
+      [  0.5, -0.5,  0.5 ],
+      [ -0.5, -0.5, -0.5 ],
+      [ -0.5,  0.5, -0.5 ],
+      [  0.5,  0.5, -0.5 ],
+      [  0.5, -0.5, -0.5 ]
     ];
+    var cubeColors = [
+      [],
+      [1.0, 0.0, 0.0], // merah
+      [0.0, 1.0, 0.0], // hijau
+      [0.0, 0.0, 1.0], // biru
+      [1.0, 1.0, 1.0], // putih
+      [1.0, 0.5, 0.0], // oranye
+      [1.0, 1.0, 0.0], // kuning
+      []
+    ];
+    function quad(a, b, c, d) {
+      var indices = [a, b, c, a, c, d];
+      for (var i=0; i < indices.length; i++) {
+        for (var j=0; j < 3; j++) {
+          vertices.push(cubePoints[indices[i]][j]);
+        }
+        for (var j=0; j < 3; j++) {
+          vertices.push(cubeColors[a][j]);
+        }
+      }
+    }
+    quad(1, 0, 3, 2);
+    quad(2, 3, 7, 6);
+    quad(3, 0, 4, 7);
+    quad(4, 5, 6, 7);
+    quad(5, 4, 0, 1);
+    quad(6, 5, 1, 2);
+
+    console.log(vertices.length);
+    console.log(vertices);
 
     // Membuat vertex buffer object (CPU Memory <==> GPU Memory)
     var vertexBufferObject = gl.createBuffer();
@@ -27,42 +62,30 @@
     var vColor = gl.getAttribLocation(program, 'vColor');
     gl.vertexAttribPointer(
       vPosition,    // variabel yang memegang posisi attribute di shader
-      2,            // jumlah elemen per atribut
+      3,            // jumlah elemen per atribut
       gl.FLOAT,     // tipe data atribut
       gl.FALSE, 
-      5 * Float32Array.BYTES_PER_ELEMENT, // ukuran byte tiap verteks (overall) 
+      6 * Float32Array.BYTES_PER_ELEMENT, // ukuran byte tiap verteks (overall) 
       0                                   // offset dari posisi elemen di array
     );
     gl.vertexAttribPointer(vColor, 3, gl.FLOAT, gl.FALSE,
-      5 * Float32Array.BYTES_PER_ELEMENT, 2 * Float32Array.BYTES_PER_ELEMENT);
+      6 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
     gl.enableVertexAttribArray(vPosition);
     gl.enableVertexAttribArray(vColor);
 
     // Membuat sambungan untuk uniform
     var thetaUniformLocation = gl.getUniformLocation(program, 'theta');
     var theta = 0;
-    gl.uniform1f(thetaUniformLocation, theta);
-    var scaleXUniformLocation = gl.getUniformLocation(program, 'scaleX');
-    var scaleX = 1.0;
-    gl.uniform1f(scaleXUniformLocation, scaleX);
-    var scaleYUniformLocation = gl.getUniformLocation(program, 'scaleY');
-    var scaleY = 1.0;
-    gl.uniform1f(scaleYUniformLocation, scaleY);
-
-    var melebar = 1.0;
 
     function render() {
-      if (scaleX >= 1.0) melebar = -1.0;
-      else if (scaleX <= -1.0) melebar = 1.0;
-      scaleX += 0.01 * melebar;
-      gl.uniform1f(scaleXUniformLocation, scaleX);
-
-      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      theta += 0.01;
+      gl.uniform1f(thetaUniformLocation, theta);
       gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.drawArrays(gl.TRIANGLES, 0, 36);
 
       requestAnimationFrame(render);
     }
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
     render();
   }
 })();
