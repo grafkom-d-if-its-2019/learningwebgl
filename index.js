@@ -87,6 +87,20 @@
     var mm = glMatrix.mat4.create();
     glMatrix.mat4.translate(mm, mm, [0.0, 0.0, -2.0]);
 
+    // Definisi untuk matrix view dan projection
+    var vmLoc = gl.getUniformLocation(program, 'viewMatrix');
+    var vm = glMatrix.mat4.create();
+    var pmLoc = gl.getUniformLocation(program, 'projectionMatrix');
+    var pm = glMatrix.mat4.create();
+    var camera = {x: 0.0, y: 0.0, z:0.0};
+    glMatrix.mat4.perspective(pm,
+      glMatrix.glMatrix.toRadian(90), // fovy dalam radian
+      canvas.width/canvas.height,     // aspect ratio
+      0.5,  // near
+      10.0, // far  
+    );
+    gl.uniformMatrix4fv(pmLoc, false, pm);
+
     // Kontrol menggunakan keyboard
     function onKeyDown(event) {
       if (event.keyCode == 189) thetaSpeed -= 0.01;       // key '-'
@@ -95,27 +109,12 @@
       if (event.keyCode == 88) axis[x] = !axis[x];
       if (event.keyCode == 89) axis[y] = !axis[y];
       if (event.keyCode == 90) axis[z] = !axis[z];
+      if (event.keyCode == 38) camera.z -= 0.1;
+      else if (event.keyCode == 40) camera.z += 0.1;
+      if (event.keyCode == 37) camera.x -= 0.1;
+      else if (event.keyCode == 39) camera.x += 0.1;
     }
     document.addEventListener('keydown', onKeyDown);
-
-    // Definisi untuk matrix view dan projection
-    var vmLoc = gl.getUniformLocation(program, 'viewMatrix');
-    var vm = glMatrix.mat4.create();
-    var pmLoc = gl.getUniformLocation(program, 'projectionMatrix');
-    var pm = glMatrix.mat4.create();
-    glMatrix.mat4.lookAt(vm,
-      [0.0, 0.0, 0.0], // di mana posisi kamera (posisi)
-      [0.0, 0.0, -2.0], // ke mana kamera menghadap (vektor)
-      [0.0, 1.0, 0.0]  // ke mana arah atas kamera (vektor)
-    );
-    gl.uniformMatrix4fv(vmLoc, false, vm);
-    glMatrix.mat4.perspective(pm,
-      glMatrix.glMatrix.toRadian(90), // fovy dalam radian
-      canvas.width/canvas.height,     // aspect ratio
-      0.5,  // near
-      10.0, // far  
-    );
-    gl.uniformMatrix4fv(pmLoc, false, pm);
 
     function render() {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -125,6 +124,13 @@
       if (axis[y]) glMatrix.mat4.rotateY(mm, mm, thetaSpeed);
       if (axis[x]) glMatrix.mat4.rotateX(mm, mm, thetaSpeed);
       gl.uniformMatrix4fv(mmLoc, false, mm);
+
+      glMatrix.mat4.lookAt(vm,
+        [camera.x, camera.y, camera.z], // di mana posisi kamera (posisi)
+        [0.0, 0.0, -2.0], // ke mana kamera menghadap (vektor)
+        [0.0, 1.0, 0.0]  // ke mana arah atas kamera (vektor)
+      );
+      gl.uniformMatrix4fv(vmLoc, false, vm);
 
       gl.drawArrays(gl.TRIANGLES, 0, 36);
       requestAnimationFrame(render);
