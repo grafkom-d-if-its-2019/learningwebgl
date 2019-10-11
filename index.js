@@ -77,15 +77,24 @@
     var thetaUniformLocation = gl.getUniformLocation(program, 'theta');
     var theta = 0;
 
-    function render() {
-      theta += 0.01;
-      gl.uniform1f(thetaUniformLocation, theta);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.drawArrays(gl.TRIANGLES, 0, 36);
+    // Definisi untuk matriks model
+    var mmLoc = gl.getUniformLocation(program, 'modelMatrix');
 
+    function render() {
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      var mm = glMatrix.mat4.create();
+      theta += 0.01;
+      glMatrix.mat4.rotateZ(mm, mm, theta);
+      glMatrix.mat4.rotateY(mm, mm, theta);
+      glMatrix.mat4.rotateX(mm, mm, theta);
+      gl.uniformMatrix4fv(mmLoc, false, mm);
+
+      gl.drawArrays(gl.TRIANGLES, 0, 36);
       requestAnimationFrame(render);
     }
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.enable(gl.DEPTH_TEST);
     render();
   }
 })();
