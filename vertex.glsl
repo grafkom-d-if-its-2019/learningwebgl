@@ -12,6 +12,7 @@ uniform mat4 projectionMatrix;
 uniform vec3 diffuseColor;
 uniform vec3 diffuseDirection;
 uniform mat3 normalMatrix;  // Berperan sebagai modelMatrix-nya vektor normal
+uniform vec3 ambientColor;
 
 void main() {
   gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPosition, 1.0);
@@ -19,5 +20,6 @@ void main() {
   vec3 normal = normalize(normalMatrix * vNormal);
   float normalDotLight = max(dot(normal, diffuseDirection), 0.0);
   vec3 diffuse = diffuseColor * vColor * normalDotLight;
-  fColor = diffuse;
+  vec3 ambient = ambientColor * vColor;
+  fColor = diffuse + ambient;
 }

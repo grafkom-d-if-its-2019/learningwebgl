@@ -125,6 +125,9 @@
     var ddLoc = gl.getUniformLocation(program, 'diffuseDirection');
     var dd = glMatrix.vec3.fromValues(0.5, 3.0, 4.0);  // xyz
     gl.uniform3fv(ddLoc, dd);
+    var acLoc = gl.getUniformLocation(program, 'ambientColor');
+    var ac = glMatrix.vec3.fromValues(0.2, 0.2, 0.2);
+    gl.uniform3fv(acLoc, ac);
 
     // Uniform untuk modelMatrix vektor normal
     var nmLoc = gl.getUniformLocation(program, 'normalMatrix');
