@@ -2,12 +2,22 @@ precision mediump float;
 
 attribute vec3 vPosition;
 attribute vec3 vColor;
+attribute vec3 vNormal;
+
 varying vec3 fColor;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 
+uniform vec3 diffuseColor;
+uniform vec3 diffuseDirection;
+uniform mat3 normalMatrix;  // Berperan sebagai modelMatrix-nya vektor normal
+
 void main() {
-  fColor = vColor;
   gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPosition, 1.0);
+  
+  vec3 normal = normalize(normalMatrix * vNormal);
+  float normalDotLight = max(dot(normal, diffuseDirection), 0.0);
+  vec3 diffuse = diffuseColor * vColor * normalDotLight;
+  fColor = diffuse;
 }

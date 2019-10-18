@@ -31,6 +31,16 @@
       [1.0, 1.0, 0.0], // kuning
       []
     ];
+    var cubeNormals = [
+      [],
+      [  0.0,  0.0,  1.0 ], // depan
+      [  1.0,  0.0,  0.0 ], // kanan
+      [  0.0, -1.0,  0.0 ], // bawah
+      [  0.0,  0.0, -1.0 ], // belakang
+      [ -1.0,  0.0,  0.0 ], // kiri
+      [  0.0,  1.0,  0.0 ], // atas
+      []
+    ];
     function quad(a, b, c, d) {
       var indices = [a, b, c, a, c, d];
       for (var i=0; i < indices.length; i++) {
@@ -39,6 +49,9 @@
         }
         for (var j=0; j < 3; j++) {
           vertices.push(cubeColors[a][j]);
+        }
+        for (var j=0; j < 3; j++) {
+          vertices.push(cubeNormals[a][j]);
         }
       }
     }
@@ -60,18 +73,22 @@
     // Membuat sambungan untuk attribute
     var vPosition = gl.getAttribLocation(program, 'vPosition');
     var vColor = gl.getAttribLocation(program, 'vColor');
+    var vNormal = gl.getAttribLocation(program, 'vNormal');
     gl.vertexAttribPointer(
       vPosition,    // variabel yang memegang posisi attribute di shader
       3,            // jumlah elemen per atribut
       gl.FLOAT,     // tipe data atribut
       gl.FALSE, 
-      6 * Float32Array.BYTES_PER_ELEMENT, // ukuran byte tiap verteks (overall) 
+      9 * Float32Array.BYTES_PER_ELEMENT, // ukuran byte tiap verteks (overall) 
       0                                   // offset dari posisi elemen di array
     );
     gl.vertexAttribPointer(vColor, 3, gl.FLOAT, gl.FALSE,
-      6 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
+      9 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
+    gl.vertexAttribPointer(vNormal, 3, gl.FLOAT, gl.FALSE,
+      9 * Float32Array.BYTES_PER_ELEMENT, 6 * Float32Array.BYTES_PER_ELEMENT);
     gl.enableVertexAttribArray(vPosition);
     gl.enableVertexAttribArray(vColor);
+    gl.enableVertexAttribArray(vNormal);
 
     // Membuat sambungan untuk uniform
     var thetaUniformLocation = gl.getUniformLocation(program, 'theta');
@@ -101,6 +118,17 @@
     );
     gl.uniformMatrix4fv(pmLoc, false, pm);
 
+    // Uniform untuk pencahayaan
+    var dcLoc = gl.getUniformLocation(program, 'diffuseColor');
+    var dc = glMatrix.vec3.fromValues(1.0, 1.0, 1.0);  // rgb
+    gl.uniform3fv(dcLoc, dc);
+    var ddLoc = gl.getUniformLocation(program, 'diffuseDirection');
+    var dd = glMatrix.vec3.fromValues(0.5, 3.0, 4.0);  // xyz
+    gl.uniform3fv(ddLoc, dd);
+
+    // Uniform untuk modelMatrix vektor normal
+    var nmLoc = gl.getUniformLocation(program, 'normalMatrix');
+
     // Kontrol menggunakan keyboard
     function onKeyDown(event) {
       if (event.keyCode == 189) thetaSpeed -= 0.01;       // key '-'
@@ -124,6 +152,11 @@
       if (axis[y]) glMatrix.mat4.rotateY(mm, mm, thetaSpeed);
       if (axis[x]) glMatrix.mat4.rotateX(mm, mm, thetaSpeed);
       gl.uniformMatrix4fv(mmLoc, false, mm);
+
+      // Perhitungan modelMatrix untuk vektor normal
+      var nm = glMatrix.mat3.create();
+      glMatrix.mat3.normalFromMat4(nm, mm);
+      gl.uniformMatrix3fv(nmLoc, false, nm);
 
       glMatrix.mat4.lookAt(vm,
         [camera.x, camera.y, camera.z], // di mana posisi kamera (posisi)
