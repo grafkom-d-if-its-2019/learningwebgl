@@ -122,8 +122,8 @@
     var dcLoc = gl.getUniformLocation(program, 'diffuseColor');
     var dc = glMatrix.vec3.fromValues(1.0, 1.0, 1.0);  // rgb
     gl.uniform3fv(dcLoc, dc);
-    var ddLoc = gl.getUniformLocation(program, 'diffuseDirection');
-    var dd = glMatrix.vec3.fromValues(0.5, 3.0, 4.0);  // xyz
+    var ddLoc = gl.getUniformLocation(program, 'diffusePosition');
+    var dd = glMatrix.vec3.fromValues(1., 2., 1.7);  // xyz
     gl.uniform3fv(ddLoc, dd);
     var acLoc = gl.getUniformLocation(program, 'ambientColor');
     var ac = glMatrix.vec3.fromValues(0.2, 0.2, 0.2);
