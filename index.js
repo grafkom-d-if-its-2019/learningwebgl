@@ -6,7 +6,10 @@
     var gl = glUtils.checkWebGL(canvas);
     var vertexShader = glUtils.getShader(gl, gl.VERTEX_SHADER, glUtils.SL.Shaders.v1.vertex);
     var fragmentShader = glUtils.getShader(gl, gl.FRAGMENT_SHADER, glUtils.SL.Shaders.v1.fragment);
-    var program = glUtils.createProgram(gl, vertexShader, fragmentShader);
+    var vertexShader2 = glUtils.getShader(gl, gl.VERTEX_SHADER, glUtils.SL.Shaders.v2.vertex);
+    var fragmentShader2 = glUtils.getShader(gl, gl.FRAGMENT_SHADER, glUtils.SL.Shaders.v2.fragment);
+    var program = glUtils.createProgram(gl, vertexShader2, fragmentShader2);
+    // var program2 = glUtils.createProgram(gl, vertexShader2, fragmentShader2);
     gl.useProgram(program);
 
     // Mendefinisikan verteks-verteks
@@ -53,6 +56,27 @@
         for (var j=0; j < 3; j++) {
           vertices.push(cubeNormals[a][j]);
         }
+        switch (indices[i]) {
+          case a:
+            vertices.push(0.0);
+            vertices.push(0.0);
+            break;
+          case b:
+            vertices.push(0.0);
+            vertices.push(1.0);
+            break;
+          case c:
+            vertices.push(1.0);
+            vertices.push(1.0);
+            break;
+          case d:
+            vertices.push(1.0);
+            vertices.push(0.0);
+            break;
+        
+          default:
+            break;
+        }
       }
     }
     quad(1, 0, 3, 2);
@@ -72,23 +96,27 @@
 
     // Membuat sambungan untuk attribute
     var vPosition = gl.getAttribLocation(program, 'vPosition');
-    var vColor = gl.getAttribLocation(program, 'vColor');
+    // var vColor = gl.getAttribLocation(program, 'vColor');
     var vNormal = gl.getAttribLocation(program, 'vNormal');
+    var vTexCoord = gl.getAttribLocation(program, 'vTexCoord');
     gl.vertexAttribPointer(
       vPosition,    // variabel yang memegang posisi attribute di shader
       3,            // jumlah elemen per atribut
       gl.FLOAT,     // tipe data atribut
       gl.FALSE, 
-      9 * Float32Array.BYTES_PER_ELEMENT, // ukuran byte tiap verteks (overall) 
+      11 * Float32Array.BYTES_PER_ELEMENT, // ukuran byte tiap verteks (overall) 
       0                                   // offset dari posisi elemen di array
     );
-    gl.vertexAttribPointer(vColor, 3, gl.FLOAT, gl.FALSE,
-      9 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
+    // gl.vertexAttribPointer(vColor, 3, gl.FLOAT, gl.FALSE,
+      // 11 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
     gl.vertexAttribPointer(vNormal, 3, gl.FLOAT, gl.FALSE,
-      9 * Float32Array.BYTES_PER_ELEMENT, 6 * Float32Array.BYTES_PER_ELEMENT);
+      11 * Float32Array.BYTES_PER_ELEMENT, 6 * Float32Array.BYTES_PER_ELEMENT);
+    gl.vertexAttribPointer(vTexCoord, 2, gl.FLOAT, gl.FALSE,
+      11 * Float32Array.BYTES_PER_ELEMENT, 9 * Float32Array.BYTES_PER_ELEMENT);
     gl.enableVertexAttribArray(vPosition);
-    gl.enableVertexAttribArray(vColor);
+    // gl.enableVertexAttribArray(vColor);
     gl.enableVertexAttribArray(vNormal);
+    gl.enableVertexAttribArray(vTexCoord);
 
     // Membuat sambungan untuk uniform
     var thetaUniformLocation = gl.getUniformLocation(program, 'theta');
@@ -173,6 +201,29 @@
     }
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
+
+    // Uniform untuk tekstur
+    var sampler0Loc = gl.getUniformLocation(program, 'sampler0');
+    gl.uniform1i(sampler0Loc, 0);
+
+    // Create a texture.
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    
+    // Fill the texture with a 1x1 blue pixel.
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+                  new Uint8Array([0, 0, 255, 255]));
+    
+    // Asynchronously load an image
+    var image = new Image();
+    image.src = "images/txStainglass.bmp";
+    image.addEventListener('load', function() {
+      // Now that the image has loaded make copy it to the texture.
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image);
+      gl.generateMipmap(gl.TEXTURE_2D);
+    });
+
     render();
   }
 })();
