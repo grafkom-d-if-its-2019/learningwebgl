@@ -118,26 +118,20 @@
     gl.enableVertexAttribArray(vNormal);
     gl.enableVertexAttribArray(vTexCoord);
 
-    // Membuat sambungan untuk uniform
-    var thetaUniformLocation = gl.getUniformLocation(program, 'theta');
-    var theta = 0;
+    // Variabel untuk rotasi
     var thetaSpeed = 0.0;
     var axis = [true, true, true];
     var x = 0;
     var y = 1;
     var z = 2;
 
-    // Definisi untuk matriks model
-    var mmLoc = gl.getUniformLocation(program, 'modelMatrix');
-    var mm = glMatrix.mat4.create();
-    glMatrix.mat4.translate(mm, mm, [0.0, 0.0, -2.0]);
-
-    // Definisi untuk matrix view dan projection
-    var vmLoc = gl.getUniformLocation(program, 'viewMatrix');
-    var vm = glMatrix.mat4.create();
-    var pmLoc = gl.getUniformLocation(program, 'projectionMatrix');
-    var pm = glMatrix.mat4.create();
+    // Definisi untuk matriks model, view, dan projection
     var camera = {x: 0.0, y: 0.0, z:0.0};
+    var mmLoc = gl.getUniformLocation(program, 'modelMatrix');
+    var vmLoc = gl.getUniformLocation(program, 'viewMatrix');
+    var pmLoc = gl.getUniformLocation(program, 'projectionMatrix');
+    // Inisiasi matriks proyeksi
+    var pm = glMatrix.mat4.create();
     glMatrix.mat4.perspective(pm,
       glMatrix.glMatrix.toRadian(90), // fovy dalam radian
       canvas.width/canvas.height,     // aspect ratio
@@ -177,6 +171,7 @@
 
     // Kontrol menggunakan mouse
     var dragging, lastx, lasty;
+    var rm = glMatrix.mat4.create();
     function onMouseDown(event) {
       var x = event.clientX;
       var y = event.clientY;
@@ -199,18 +194,36 @@
       dragging = false;
     }
     function onMouseMove(event) {
-      var x = event.clientX;
-      var y = event.clientY;
       if (dragging) {
-        factor = 10 / canvas.height;
-        var dx = factor * (x - lastx);
-        var dy = factor * (y - lasty);
-        // Menggunakan dx dan dy untuk memutar kubus
-        glMatrix.mat4.rotateY(mm, mm, dx);
-        glMatrix.mat4.rotateX(mm, mm, dy);
+        var x = event.clientX;
+        var y = event.clientY;
+        // Sumbu X dan Y harus selalu dipantau dan diupdate,
+        //  sehubungan dengan transformasi yang terjadi sebelumnya.
+        // Agar sumbu X dan Y di object coordinate dapat menyesuaikan diri 
+        //  dengan sumbu X dan Y di world coordinate,
+        //  maka mereka perlu ditransformasikan sesuai dengan inversi dari 
+        //  rotasi yang dieksekusi sebelumnya
+        var invrm = glMatrix.mat4.create();
+        var yaxis4 = glMatrix.vec4.create();
+        var xaxis4 = glMatrix.vec4.create();
+        // Asumsinya geser 1 piksel = putar 1/2 derajat
+        var dx = (x - lastx) / 2;
+        var dy = (y - lasty) / 2;
+        var rotx = glMatrix.glMatrix.toRadian(dy);
+        var roty = glMatrix.glMatrix.toRadian(dx);
+        // Rotasi terhadap sumbu y global
+        glMatrix.mat4.invert(invrm, rm);
+        glMatrix.vec4.transformMat4(yaxis4, glMatrix.vec4.fromValues(0, 1, 0, 0), invrm);
+        var yaxis = glMatrix.vec3.fromValues(yaxis4[0], yaxis4[1], yaxis4[2]);
+        glMatrix.mat4.rotate(rm, rm, roty, yaxis);
+        // Rotasi terhadap sumbu x global
+        glMatrix.mat4.invert(invrm, rm);
+        glMatrix.vec4.transformMat4(xaxis4, glMatrix.vec4.fromValues(1, 0, 0, 0), invrm);
+        var xaxis = glMatrix.vec3.fromValues(xaxis4[0], xaxis4[1], xaxis4[2]);
+        glMatrix.mat4.rotate(rm, rm, rotx, xaxis);
+        lastx = x;
+        lasty = y;
       }
-      lastx = x;
-      lasty = y;
     }
     document.addEventListener('mousedown', onMouseDown);
     document.addEventListener('mouseup', onMouseUp);
@@ -219,17 +232,26 @@
     function render() {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      theta += thetaSpeed;
-      if (axis[z]) glMatrix.mat4.rotateZ(mm, mm, thetaSpeed);
-      if (axis[y]) glMatrix.mat4.rotateY(mm, mm, thetaSpeed);
-      if (axis[x]) glMatrix.mat4.rotateX(mm, mm, thetaSpeed);
+      // Inisiasi matriks model
+      var mm = glMatrix.mat4.create();
+      glMatrix.mat4.translate(mm, mm, [0.0, 0.0, -2.0]);
+
+      if (!dragging) {
+        // Lakukan perputaran terhadap sumbu x, y, z object
+        if (axis[z]) glMatrix.mat4.rotate(rm, rm, thetaSpeed, glMatrix.vec3.fromValues(0, 0, 1));
+        if (axis[y]) glMatrix.mat4.rotate(rm, rm, thetaSpeed, glMatrix.vec3.fromValues(0, 1, 0));
+        if (axis[x]) glMatrix.mat4.rotate(rm, rm, thetaSpeed, glMatrix.vec3.fromValues(1, 0, 0));
+      }
+      glMatrix.mat4.multiply(mm, mm, rm);
       gl.uniformMatrix4fv(mmLoc, false, mm);
 
-      // Perhitungan modelMatrix untuk vektor normal
+      // Perhitungan matriks model untuk vektor normal
       var nm = glMatrix.mat3.create();
       glMatrix.mat3.normalFromMat4(nm, mm);
       gl.uniformMatrix3fv(nmLoc, false, nm);
-
+      
+      // Perhitungan matriks pandangan (view)
+      var vm = glMatrix.mat4.create();
       glMatrix.mat4.lookAt(vm,
         [camera.x, camera.y, camera.z], // di mana posisi kamera (posisi)
         [0.0, 0.0, -2.0], // ke mana kamera menghadap (vektor)
