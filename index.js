@@ -195,7 +195,9 @@
     function onMouseUp(event) {
       // Ketika klik kiri mouse dilepas
       dragging = false;
-      startQuat = computeCurrentQuat();
+      if (currentPos != startPos) {
+        startQuat = computeCurrentQuat();
+      }
     }
     function onMouseMove(event) {
       if (dragging) {
