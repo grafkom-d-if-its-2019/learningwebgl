@@ -191,11 +191,11 @@
       // Untuk perhitungan di virtual arc ball 
       startPos = projectOntoSurface(glMatrix.vec3.fromValues(x, y, 0));
       currentPos = startPos;
-      startQuat = glMatrix.quat.create();
     }
     function onMouseUp(event) {
       // Ketika klik kiri mouse dilepas
       dragging = false;
+      startQuat = computeCurrentQuat();
     }
     function onMouseMove(event) {
       if (dragging) {
@@ -211,7 +211,8 @@
     document.addEventListener('mousemove', onMouseMove);
 
     // QUATERNION SECTION
-    var startPos, currentPos, startQuat;
+    var startPos, currentPos;
+    var startQuat = glMatrix.quat.create();
     //  Mensimulasikan interaksi mouse dengan object
     //  melalui virtual arc ball
     function projectOntoSurface(point) {
