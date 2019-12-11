@@ -185,8 +185,6 @@
         rect.bottom > y
       ) {
         dragging = true;
-        lastx = x;
-        lasty = y;
       }
       // Untuk perhitungan di virtual arc ball 
       startPos = projectOntoSurface(glMatrix.vec3.fromValues(x, y, 0));
